@@ -1,0 +1,10 @@
+# wrangler.toml — Cloudflare Pages configuration
+# Place this in your repo root (KLINEKRAFT/colinkline-website)
+
+name = "colinkline-website"
+compatibility_date = "2024-01-01"
+
+# R2 bucket binding for the dataset
+[[r2_buckets]]
+binding = "DATASET_BUCKET"
+bucket_name = "animal-attack-data"
