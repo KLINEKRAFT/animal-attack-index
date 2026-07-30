@@ -64,6 +64,18 @@ export async function onRequest(context) {
     "exercise", "workout", "influencer",
   ];
 
+  // Guardian trailText arrives with inline markup (<strong>, <a>…). The front
+  // end renders escaped text, so strip the tags here rather than showing them.
+  function stripTags(s) {
+    return (s || "").replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
+  }
+
+  // Guardian thumbnails default to a 500px-wide crop, which is soft on the
+  // lead-story slot. The same asset is served at 1000px from the same path.
+  function upscaleGuardian(u) {
+    return (u || "").replace(/\/500\.jpg$/, "/1000.jpg");
+  }
+
   function scoreArticle(title, desc) {
     const t = (title || "").toLowerCase();
     const d = (desc || "").toLowerCase();
@@ -119,7 +131,7 @@ export async function onRequest(context) {
       const d = await r.json();
       if (d.response?.results) {
         for (const x of d.response.results) {
-          addArticle({ title: x.webTitle || "", description: x.fields?.trailText || "", url: x.webUrl || "", publishedAt: x.webPublicationDate || "", source: "The Guardian" });
+          addArticle({ title: x.webTitle || "", description: stripTags(x.fields?.trailText), url: x.webUrl || "", publishedAt: x.webPublicationDate || "", source: "The Guardian", image: upscaleGuardian(x.fields?.thumbnail) });
         }
       }
     } catch (e) {}
@@ -134,7 +146,7 @@ export async function onRequest(context) {
       const d = await r.json();
       if (d.results) {
         for (const x of d.results) {
-          addArticle({ title: x.title || "", description: x.description || "", url: x.link || "", publishedAt: x.pubDate || "", source: x.source_id || "Newsdata" });
+          addArticle({ title: x.title || "", description: stripTags(x.description), url: x.link || "", publishedAt: x.pubDate || "", source: x.source_name || x.source_id || "Newsdata", image: x.image_url || "" });
         }
       }
     } catch (e) {}
